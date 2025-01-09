@@ -1,0 +1,12 @@
+{
+  "name": "ServerSwitch",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "Switch between different server environments for multiple websites.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "tabs"
+  ]
+}
