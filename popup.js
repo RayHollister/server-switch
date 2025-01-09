@@ -1,54 +1,48 @@
-// popup.js
 document.addEventListener("DOMContentLoaded", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    const url = new URL(tabs[0].url);
-    const match = getSiteAndEnv(url.hostname);
-    const header = document.getElementById("header");
-    const envList = document.getElementById("env-list");
+    let url = new URL(tabs[0].url);
+    let match = getSiteAndEnv(url.hostname);
 
-    // If the site isn't in siteData
     if (!match) {
-      header.textContent = "No mapping found";
+      // Show "No multidev environments detected." in the header
+      document.getElementById("header").textContent = "No multidev environments detected.";
+
+      // Create "Add a multidev environment." link
+      const envList = document.getElementById("env-list");
+      const li = document.createElement("li");
+      li.textContent = "Add a multidev environment.";
+      li.style.color = "#0073ea";       // Make it look link-ish
+      li.style.fontWeight = "bold";
+      li.style.cursor = "pointer";
+
+      // When clicked, open the options page
+      li.addEventListener("click", () => {
+        chrome.runtime.openOptionsPage();
+      });
+
+      envList.appendChild(li);
       return;
     }
 
-    // Grab all environments for the current site
+    // Otherwise, the site is found in siteData. Show the normal environment list.
+    document.getElementById("header").textContent = `Switch ${match.siteName} Server`;
+
     const envMap = siteData[match.siteName];
-    const envKeys = Object.keys(envMap);
-
-    if (envKeys.length <= 1) {
-      // Only one environment => treat as no multidev
-      header.textContent = "No multidev environments detected.";
-
-      // Create a single list item to add one
+    const envList = document.getElementById("env-list");
+    Object.keys(envMap).forEach(envName => {
       const li = document.createElement("li");
-      li.textContent = "Add a multidev environment";
-      li.addEventListener("click", () => {
-        // Attempt to open the siteData.js file in a new tab
-        chrome.tabs.create({
-          url: "chrome-extension://" + chrome.runtime.id + "/siteData.js"
-        });
-      });
+      li.textContent = envName;
+      li.addEventListener("click", () => switchToEnvironment(envName, tabs[0].id, url));
       envList.appendChild(li);
-    } else {
-      // Show normal environment listing
-      header.textContent = `Switch ${match.siteName} Server`;
-
-      envKeys.forEach(envName => {
-        const li = document.createElement("li");
-        li.textContent = envName;
-        li.addEventListener("click", () => switchToEnvironment(envName, tabs[0].id, url));
-        envList.appendChild(li);
-      });
-    }
+    });
   });
 });
 
 function switchToEnvironment(envName, tabId, currentUrl) {
-  const match = getSiteAndEnv(currentUrl.hostname);
+  let match = getSiteAndEnv(currentUrl.hostname);
   if (!match) return;
 
-  const newHost = siteData[match.siteName][envName];
+  let newHost = siteData[match.siteName][envName];
   if (!newHost) return;
 
   currentUrl.hostname = newHost;

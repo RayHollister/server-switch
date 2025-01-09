@@ -12,7 +12,9 @@
     "default_popup": "popup.html",
     "default_icon": "images/toggle-on-solid_16.png"
   },
-  "permissions": [
-    "tabs"
-  ]
+  "permissions": ["tabs", "storage"],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
 }
