@@ -1,5 +1,5 @@
 // siteData.js
-// A single source of truth for environment mappings.
+// Single source of truth for environment mappings.
 
 const siteData = {
   JaxToday: {

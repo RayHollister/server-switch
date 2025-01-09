@@ -1,38 +1,56 @@
 // popup.js
 document.addEventListener("DOMContentLoaded", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    let url = new URL(tabs[0].url);
-    let match = getSiteAndEnv(url.hostname);
+    const url = new URL(tabs[0].url);
+    const match = getSiteAndEnv(url.hostname);
+    const header = document.getElementById("header");
+    const envList = document.getElementById("env-list");
 
-    // If the site isn't in siteData, do nothing.
+    // If the site isn't in siteData
     if (!match) {
-      document.getElementById("env-buttons").textContent = "No mapping found!";
+      header.textContent = "No mapping found";
       return;
     }
 
-    // Create a button for each environment in the siteData entry.
-    let envKeys = Object.keys(siteData[match.siteName]);
-    let container = document.getElementById("env-buttons");
-    envKeys.forEach(envName => {
-      let btn = document.createElement("button");
-      btn.textContent = envName;
-      btn.addEventListener("click", () => switchToEnvironment(envName, tabs[0].id, url));
-      container.appendChild(btn);
-    });
+    // Grab all environments for the current site
+    const envMap = siteData[match.siteName];
+    const envKeys = Object.keys(envMap);
+
+    if (envKeys.length <= 1) {
+      // Only one environment => treat as no multidev
+      header.textContent = "No multidev environments detected.";
+
+      // Create a single list item to add one
+      const li = document.createElement("li");
+      li.textContent = "Add a multidev environment";
+      li.addEventListener("click", () => {
+        // Attempt to open the siteData.js file in a new tab
+        chrome.tabs.create({
+          url: "chrome-extension://" + chrome.runtime.id + "/siteData.js"
+        });
+      });
+      envList.appendChild(li);
+    } else {
+      // Show normal environment listing
+      header.textContent = `Switch ${match.siteName} Server`;
+
+      envKeys.forEach(envName => {
+        const li = document.createElement("li");
+        li.textContent = envName;
+        li.addEventListener("click", () => switchToEnvironment(envName, tabs[0].id, url));
+        envList.appendChild(li);
+      });
+    }
   });
 });
 
 function switchToEnvironment(envName, tabId, currentUrl) {
-  // Find which site/env we’re on.
-  let match = getSiteAndEnv(currentUrl.hostname);
+  const match = getSiteAndEnv(currentUrl.hostname);
   if (!match) return;
 
-  // Grab the new host from siteData.
-  let newHost = siteData[match.siteName][envName];
+  const newHost = siteData[match.siteName][envName];
   if (!newHost) return;
 
-  // Keep path, query, etc.
   currentUrl.hostname = newHost;
-
   chrome.tabs.update(tabId, { url: currentUrl.href });
 }
