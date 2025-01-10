@@ -63,25 +63,17 @@ function getSiteAndEnv(currentUrl, data) {
 }
 
 /**
- * Switches the current tab to the selected environment.
- * Preserves path, query, and hash from the current URL.
+ * Builds the target URL (scheme/host/port) but preserves path, query, hash.
  */
-function switchToEnvironment(envName, envMap, tabId, currentUrl) {
-  const envObj = envMap[envName];
-  if (!envObj) return;
-
+function buildEnvUrl(envObj, currentUrl) {
   const parsed = parseEnvDomain(envObj.domain, currentUrl.protocol);
-  if (!parsed) return;
-
-  // Use the parsed base (scheme/host/port) but keep path/query/hash
+  if (!parsed) return null;
   parsed.pathname = currentUrl.pathname;
   parsed.search = currentUrl.search;
   parsed.hash = currentUrl.hash;
-
-  chrome.tabs.update(tabId, { url: parsed.href });
+  return parsed.href;
 }
 
-// --------------- MAIN FLOW ---------------
 document.addEventListener("DOMContentLoaded", async () => {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentUrl = new URL(tabs[0].url);
@@ -115,18 +107,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   const envArray = Object.entries(envMap).map(([envName, obj]) => ({
     envName,
     domain: obj.domain,
-    order: obj.order
+    order: obj.order,
   }));
 
+  // Sort by order
   envArray.sort((a, b) => (a.order || 0) - (b.order || 0));
 
   // Create environment list items
-  envArray.forEach((item) => {
+  envArray.forEach(item => {
     const li = document.createElement("li");
     li.textContent = item.envName;
-    li.addEventListener("click", () =>
-      switchToEnvironment(item.envName, envMap, tabs[0].id, currentUrl)
-    );
+
+    // On mousedown, decide if user is right-clicking, ctrl-clicking, etc.
+    li.addEventListener("mousedown", e => {
+      // Build the full environment URL
+      const envHref = buildEnvUrl(item, currentUrl);
+      if (!envHref) return;
+
+      // Right-click (button===2), or Ctrl / Cmd / Middle-click to open in new tab
+      if (e.button === 2 || e.ctrlKey || e.metaKey || e.button === 1) {
+        e.preventDefault();
+        chrome.tabs.create({ url: envHref, active: false });
+      } 
+      // Left-click (button===0) => same tab
+      else if (e.button === 0) {
+        e.preventDefault();
+        chrome.tabs.update(tabs[0].id, { url: envHref });
+      }
+    });
+
+    // (Optional) suppress the context menu so the popup doesn't vanish immediately
+    li.addEventListener("contextmenu", e => {
+      e.preventDefault(); // stops the default context menu
+    });
+
     envListEl.appendChild(li);
   });
 
