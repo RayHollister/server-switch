@@ -1,4 +1,8 @@
 // popup.js
+
+/**
+ * Loads environment data from storage or uses defaults if empty.
+ */
 async function loadSiteDataFromStorage() {
   return new Promise(resolve => {
     chrome.storage.sync.get({ serverSwitchData: {} }, items => {
@@ -15,17 +19,81 @@ async function loadSiteDataFromStorage() {
   });
 }
 
+/**
+ * Parses a domain string. If it contains "://", we treat it as a full URL.
+ * Otherwise, we prepend the default scheme (e.g. currentUrl.protocol) to parse it.
+ * Returns a URL object, or null if invalid.
+ */
+function parseEnvDomain(domainStr, defaultScheme) {
+  try {
+    // If user included a scheme (like http:// or https://), parse as is
+    if (domainStr.includes("://")) {
+      return new URL(domainStr);
+    } else {
+      // Prepend scheme// to handle port or plain domain
+      return new URL(`${defaultScheme}//${domainStr}`);
+    }
+  } catch (err) {
+    console.error("Failed to parse domain:", domainStr, err);
+    return null;
+  }
+}
+
+/**
+ * Attempts to find which site/env the current URL matches
+ * by comparing host and port against the stored domain.
+ */
+function getSiteAndEnv(currentUrl, data) {
+  for (const [siteName, envMap] of Object.entries(data)) {
+    for (const [envName, envObj] of Object.entries(envMap)) {
+      const parsed = parseEnvDomain(envObj.domain, currentUrl.protocol);
+      if (!parsed) continue; // skip invalid
+
+      // Compare host+port from the environment's domain to the current URL
+      if (
+        parsed.hostname === currentUrl.hostname &&
+        // Ports can be empty strings. Convert them to "80" or "443" logic if needed.
+        (parsed.port || "") === (currentUrl.port || "")
+      ) {
+        return { siteName, envName };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Switches the current tab to the selected environment.
+ * Preserves path, query, and hash from the current URL.
+ */
+function switchToEnvironment(envName, envMap, tabId, currentUrl) {
+  const envObj = envMap[envName];
+  if (!envObj) return;
+
+  const parsed = parseEnvDomain(envObj.domain, currentUrl.protocol);
+  if (!parsed) return;
+
+  // Use the parsed base (scheme/host/port) but keep path/query/hash
+  parsed.pathname = currentUrl.pathname;
+  parsed.search = currentUrl.search;
+  parsed.hash = currentUrl.hash;
+
+  chrome.tabs.update(tabId, { url: parsed.href });
+}
+
+// --------------- MAIN FLOW ---------------
 document.addEventListener("DOMContentLoaded", async () => {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentUrl = new URL(tabs[0].url);
 
   // Load data from storage or defaults
   const data = await loadSiteDataFromStorage();
-  const match = getSiteAndEnv(currentUrl.hostname, data);
+  const match = getSiteAndEnv(currentUrl, data);
 
   const headerEl = document.getElementById("header");
   const envListEl = document.getElementById("env-list");
 
+  // If no match, show "No multidev environments detected."
   if (!match) {
     headerEl.textContent = "No multidev environments detected.";
     const li = document.createElement("li");
@@ -40,10 +108,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // Found a match, so list the environments for the matched site
   headerEl.textContent = `Switch ${match.siteName} Server`;
 
-  const envMap = data[match.siteName]; 
-  // Convert the envMap to an array of {envName, domain, order}
+  const envMap = data[match.siteName];
+  // Convert the envMap to an array of {envName, domain, order} objects
   const envArray = Object.entries(envMap).map(([envName, obj]) => ({
     envName,
     domain: obj.domain,
@@ -53,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Sort by order ascending
   envArray.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  // Create list items
+  // Create list items for each environment
   envArray.forEach(item => {
     const li = document.createElement("li");
     li.textContent = item.envName;
@@ -63,38 +132,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     envListEl.appendChild(li);
   });
 });
-
-function switchToEnvironment(envName, envMap, tabId, currentUrl) {
-  const envObj = envMap[envName];
-  if (!envObj) return;
-
-  currentUrl.hostname = envObj.domain;
-  chrome.tabs.update(tabId, { url: currentUrl.href });
-}
-
-function getSiteAndEnv(domain, data) {
-  for (const [siteName, envMap] of Object.entries(data)) {
-    for (const [envName, envObj] of Object.entries(envMap)) {
-      if (envObj.domain === domain) {
-        return { siteName, envName };
-      }
-    }
-  }
-  return null;
-}
-
-async function loadSiteDataFromStorage() {
-  return new Promise(resolve => {
-    chrome.storage.sync.get({ serverSwitchData: {} }, items => {
-      const storedData = items.serverSwitchData;
-      if (Object.keys(storedData).length === 0) {
-        // If empty, set defaults
-        chrome.storage.sync.set({ serverSwitchData: defaultSiteData }, () => {
-          resolve(defaultSiteData);
-        });
-      } else {
-        resolve(storedData);
-      }
-    });
-  });
-}
