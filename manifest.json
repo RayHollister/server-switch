@@ -1,6 +1,6 @@
 {
   "name": "ServerSwitch",
-  "version": "1.0",
+  "version": "1.0.1",
   "manifest_version": 3,
   "description": "Switch between different server environments for multiple websites.",
   "icons": {
