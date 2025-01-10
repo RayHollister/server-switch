@@ -112,18 +112,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   headerEl.textContent = `Switch ${match.siteName} Server`;
 
   const envMap = data[match.siteName];
-  // Convert the envMap to an array of {envName, domain, order} objects
   const envArray = Object.entries(envMap).map(([envName, obj]) => ({
     envName,
     domain: obj.domain,
     order: obj.order
   }));
 
-  // Sort by order ascending
   envArray.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  // Create list items for each environment
-  envArray.forEach(item => {
+  // Create environment list items
+  envArray.forEach((item) => {
     const li = document.createElement("li");
     li.textContent = item.envName;
     li.addEventListener("click", () =>
@@ -131,4 +129,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
     envListEl.appendChild(li);
   });
+
+  // Add "Edit Multidev Environment" link at the bottom
+  const liEdit = document.createElement("li");
+  liEdit.textContent = "Edit Multidev Environments";
+  liEdit.style.color = "#0073ea";
+  liEdit.style.fontWeight = "bold";
+  liEdit.style.cursor = "pointer";
+  liEdit.addEventListener("click", () => {
+    chrome.runtime.openOptionsPage();
+  });
+  envListEl.appendChild(liEdit);
 });
