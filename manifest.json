@@ -3,17 +3,19 @@
   "version": "1.0",
   "manifest_version": 3,
   "description": "Switch between different server environments for multiple websites.",
+  "icons": {
+    "16": "images/toggle-on-solid_16.png",
+    "48": "images/toggle-on-solid_48.png",
+    "64": "images/toggle-on-solid_64.png",
+    "128": "images/toggle-on-solid_128.png"
+  },
   "permissions": ["tabs", "storage"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": {
-      "16": "images/toggle-on-solid_16.png",
-      "48": "images/toggle-on-solid_48.png",
-      "128": "images/toggle-on-solid_128.png"
-    }
+    "default_icon": "images/toggle-on-solid_64.png"
   },
   "options_ui": {
     "page": "options.html",

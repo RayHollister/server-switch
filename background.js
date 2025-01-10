@@ -38,6 +38,7 @@ async function updateIconForTab(tabId) {
       path: {
         "16": "images/toggle-off-solid_16.png",
         "48": "images/toggle-off-solid_48.png",
+        "64": "images/toggle-off-solid_64.png",
         "128": "images/toggle-off-solid_128.png"
       }
     });
@@ -48,6 +49,7 @@ async function updateIconForTab(tabId) {
       path: {
         "16": "images/toggle-on-solid_16.png",
         "48": "images/toggle-on-solid_48.png",
+        "64": "images/toggle-on-solid_64.png",
         "128": "images/toggle-on-solid_128.png"
       }
     });
