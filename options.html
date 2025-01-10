@@ -8,9 +8,11 @@
         font: 14px "Roboto", sans-serif;
         margin: 20px;
         color: #333;
+        display: flex;
+        justify-content: center;
       }
       h1 {
-        font-size: 18px;
+        font-size: 28px;
       }
       .row {
         margin-bottom: 10px;
@@ -19,7 +21,8 @@
         display: inline-block;
         width: 120px;
       }
-      input[type="text"] {
+      input[type="text"],
+      input[type="number"] {
         width: 200px;
       }
       table {
@@ -33,13 +36,19 @@
       th {
         background: #eee;
       }
+      .action-btn {
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+        margin-right: 8px;
+      }
       .delete-btn {
         color: red;
-        cursor: pointer;
       }
     </style>
   </head>
   <body>
+    <div>
     <h1>ServerSwitch Options</h1>
 
     <div>
@@ -55,6 +64,10 @@
         <label for="domain">Domain:</label>
         <input type="text" id="domain" />
       </div>
+      <div class="row">
+        <label for="order">Order:</label>
+        <input type="number" id="order" />
+      </div>
       <button id="addBtn">Add Environment</button>
     </div>
 
@@ -64,6 +77,7 @@
           <th>Site Name</th>
           <th>Environment</th>
           <th>Domain</th>
+          <th>Order</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -71,5 +85,6 @@
     </table>
 
     <script src="options.js"></script>
+  </div>
   </body>
 </html>

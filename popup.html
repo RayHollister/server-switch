@@ -6,9 +6,12 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <!-- Header and dynamic list container -->
     <h1 id="header"></h1>
     <ul id="env-list"></ul>
+
+    <!-- Load the data file first -->
+    <script src="defaultSiteData.js"></script>
+    <!-- Then load popup.js, which depends on defaultSiteData -->
     <script src="popup.js"></script>
   </body>
 </html>
