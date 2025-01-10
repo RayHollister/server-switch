@@ -6,21 +6,70 @@
     <style>
       body {
         font: 14px "Roboto", sans-serif;
-        margin: 10px;
+        margin: 20px;
         color: #333;
       }
       h1 {
         font-size: 18px;
       }
-      /* Add more styling as needed */
+      .row {
+        margin-bottom: 10px;
+      }
+      label {
+        display: inline-block;
+        width: 120px;
+      }
+      input[type="text"] {
+        width: 200px;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th, td {
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+      }
+      th {
+        background: #eee;
+      }
+      .delete-btn {
+        color: red;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <h1>ServerSwitch Options</h1>
-    <p>
-      In a real scenario, you could build out a form to add or remove
-      multidev environments here. For now, this is just a placeholder.
-    </p>
+
+    <div>
+      <div class="row">
+        <label for="siteName">Site Name:</label>
+        <input type="text" id="siteName" />
+      </div>
+      <div class="row">
+        <label for="envName">Environment:</label>
+        <input type="text" id="envName" />
+      </div>
+      <div class="row">
+        <label for="domain">Domain:</label>
+        <input type="text" id="domain" />
+      </div>
+      <button id="addBtn">Add Environment</button>
+    </div>
+
+    <table id="siteTable">
+      <thead>
+        <tr>
+          <th>Site Name</th>
+          <th>Environment</th>
+          <th>Domain</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
     <script src="options.js"></script>
   </body>
 </html>
