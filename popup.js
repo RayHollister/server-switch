@@ -120,17 +120,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // On mousedown, decide if user is right-clicking, ctrl-clicking, etc.
     li.addEventListener("mousedown", e => {
-      // Build the full environment URL
       const envHref = buildEnvUrl(item, currentUrl);
       if (!envHref) return;
-
-      // Right-click (button===2), or Ctrl / Cmd / Middle-click to open in new tab
+    
       if (e.button === 2 || e.ctrlKey || e.metaKey || e.button === 1) {
+        // Right/Middle/Ctrl/Cmd-click => open in new tab
         e.preventDefault();
-        chrome.tabs.create({ url: envHref, active: false });
-      } 
-      // Left-click (button===0) => same tab
-      else if (e.button === 0) {
+        chrome.tabs.create({
+          url: envHref,
+          active: false,
+          index: tabs[0].index + 1
+        });
+      } else if (e.button === 0) {
+        // Left-click => same tab
         e.preventDefault();
         chrome.tabs.update(tabs[0].id, { url: envHref });
       }
