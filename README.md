@@ -27,6 +27,9 @@ That’s it! You should see the little toggle icon in your extensions area.
 
 -   You can reorder environments or edit their domains in the Options page.
 -   The extension icon will look like it’s switched **ON** (toggle-on) if you’re on a recognized domain, and **OFF** (toggle-off) otherwise.
+-   You can just enter the domains (e.g., `example.com`) or the full URL (e.g., `https://example.com`) and/or the port (e.g., `127.0.0.1:8080`) for each environment and the extension will handle the rest.
+-   When you install the extension, it will automatically add the sites that I am working on right now. You can remove them and replace them with your own.
+-   To add a new environment, just click the extension icon and then click the **Add a multidev environment** link.
 -   Because this extension is super specialized, it’s not in the Chrome Web Store (yet). If it magically gets more than 1,000 stars here on GitHub, I’ll publish it. 
 
 ## Contributing
